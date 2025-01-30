@@ -2,6 +2,7 @@ import {
 	AmbientLight,
 	BoxGeometry,
 	InstancedMesh,
+	Matrix4,
 	Mesh,
 	MeshBasicMaterial,
 	PerspectiveCamera,
@@ -11,6 +12,8 @@ import {
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import "./style.css";
+import { log, vec3 } from "three/tsl";
+import { DirectionalLight, MeshStandardMaterial, Vector3 } from "three/webgpu";
 
 // Scene, Camera, Renderer
 const scene = new Scene();
@@ -29,21 +32,42 @@ document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 
-const planeGeometry = new PlaneGeometry(10, 10, 10, 10);
-const planeMaterial = new MeshBasicMaterial({
-	color: 0xff0000,
-	wireframe: true,
+const planeGeometry = new PlaneGeometry(20, 20);
+const planeMaterial = new MeshStandardMaterial({
+	color: 0xffffff,
 });
 const plane = new Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = -(Math.PI / 2);
 
+const gridSize = 10;
 const cubeGeometry = new BoxGeometry(1, 1, 1);
-const cubeMaterial = new MeshBasicMaterial({ color: 0xff0000 });
-const cube = new InstancedMesh(cubeGeometry, cubeMaterial, 1);
+const cubeMaterial = new MeshStandardMaterial({ color: 0xffffff });
+const cube = new InstancedMesh(
+	cubeGeometry,
+	cubeMaterial,
+	Math.pow(gridSize, 2)
+);
+cube.position.set(-(gridSize / 2), 0.5, -(gridSize / 2));
 
 const ambientLight = new AmbientLight(0xffffff, 1);
-scene.add(ambientLight);
+const directionalLight = new DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 0);
 
+const spacing = 1.1;
+
+for (let index = 0; index < cube.count; index++) {
+	const row = Math.floor(index / gridSize);
+	const col = index % gridSize;
+
+	const position = new Vector3(col * spacing, 0, row * spacing);
+
+	const instanceMatrix = new Matrix4();
+	instanceMatrix.setPosition(position);
+	cube.setMatrixAt(index, instanceMatrix);
+}
+
+scene.add(ambientLight);
+scene.add(directionalLight);
 scene.add(plane);
 scene.add(cube);
 
