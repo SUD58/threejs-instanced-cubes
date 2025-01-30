@@ -4,42 +4,41 @@ import {
 	InstancedMesh,
 	Matrix4,
 	Mesh,
-	MeshBasicMaterial,
 	PerspectiveCamera,
 	PlaneGeometry,
 	Scene,
 	WebGLRenderer,
+	DirectionalLight,
+	Fog,
+	MeshStandardMaterial,
+	Vector3,
 } from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import "./style.css";
-import { log, vec3 } from "three/tsl";
-import { DirectionalLight, MeshStandardMaterial, Vector3 } from "three/webgpu";
 
-// Scene, Camera, Renderer
 const scene = new Scene();
+scene.fog = new Fog(0xcccccc, 15, 50);
+
 const camera = new PerspectiveCamera(
 	75,
 	window.innerWidth / window.innerHeight,
 	0.1,
 	1000
 );
-camera.position.set(5, 5, 5);
+camera.position.set(7.5, 10, 7.5);
 camera.lookAt(0, 0, 0);
 
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-
-const planeGeometry = new PlaneGeometry(20, 20);
+const gridSize = 140;
+const planeGeometry = new PlaneGeometry(gridSize * 5, gridSize * 5);
 const planeMaterial = new MeshStandardMaterial({
 	color: 0xffffff,
 });
 const plane = new Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = -(Math.PI / 2);
 
-const gridSize = 10;
 const cubeGeometry = new BoxGeometry(1, 1, 1);
 const cubeMaterial = new MeshStandardMaterial({ color: 0xffffff });
 const cube = new InstancedMesh(
@@ -71,16 +70,12 @@ scene.add(directionalLight);
 scene.add(plane);
 scene.add(cube);
 
-// Resize Handler
 window.addEventListener("resize", () => {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 });
 
-controls.update();
-
-// Animation Loop
 function animate() {
 	requestAnimationFrame(animate);
 	renderer.render(scene, camera);
