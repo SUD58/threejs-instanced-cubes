@@ -96,22 +96,46 @@ window.addEventListener("resize", () => {
 
 function animate() {
 	raycaster.setFromCamera(mouse, camera);
-
 	const intersection = raycaster.intersectObject(cubes);
 
 	if (intersection.length > 0) {
 		const instanceId = intersection[0].instanceId;
 
-		cubes.getColorAt(instanceId, color);
+		// Get the position of the intersected cube
+		const instanceMatrix = new Matrix4();
+		cubes.getMatrixAt(instanceId, instanceMatrix);
 
-		if (color.equals(white)) {
-			cubes.setColorAt(instanceId, color.setHex(Math.random() * 0xffffff));
+		const instancePosition = new Vector3();
+		instancePosition.setFromMatrixPosition(instanceMatrix);
 
-			cubes.instanceColor.needsUpdate = true;
+		const radius = 4; // Define the radius around the intersection
+		const radiusSquared = radius * radius; // Avoid expensive sqrt calculations
+
+		// Iterate over all instances
+		for (let i = 0; i < cubes.count; i++) {
+			const tempMatrix = new Matrix4();
+			cubes.getMatrixAt(i, tempMatrix);
+
+			const tempPosition = new Vector3();
+			tempPosition.setFromMatrixPosition(tempMatrix);
+
+			// Compute squared distance
+			const distanceSquared = instancePosition.distanceToSquared(tempPosition);
+
+			if (distanceSquared <= radiusSquared) {
+				// Change color for instances within the radius
+				cubes.getColorAt(i, color);
+				if (color.equals(white)) {
+					cubes.setColorAt(i, color.setHex(Math.random() * 0xffffff));
+				}
+			}
 		}
+
+		cubes.instanceColor.needsUpdate = true;
 	}
 
 	requestAnimationFrame(animate);
 	renderer.render(scene, camera);
 }
+
 animate();
