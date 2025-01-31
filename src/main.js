@@ -15,6 +15,7 @@ import {
 	Color,
 	Vector2,
 	Raycaster,
+	Clock,
 } from "three";
 import "./style.css";
 import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
@@ -95,7 +96,11 @@ window.addEventListener("resize", () => {
 	camera.updateProjectionMatrix();
 });
 
+const clock = new Clock();
+
 function animate() {
+	const elapsedTime = clock.getElapsedTime();
+
 	raycaster.setFromCamera(mouse, camera);
 	const intersection = raycaster.intersectObject(cubes);
 
@@ -131,21 +136,25 @@ function animate() {
 					cubes.setColorAt(i, color.setHex(0xefbf04));
 				}
 
-				const distance = Math.sqrt(distanceSquared); // Get actual distance
-				const falloff = 1.5 - distance / radius; // Normalize falloff (closer = stronger)
-				const lift = falloff * 2; // Height affected by falloff
+				const distance = Math.sqrt(distanceSquared);
 
-				tempPosition.y += (lift - tempPosition.y) / 10;
-				tempMatrix.setPosition(tempPosition);
+				// Linear falloff for how much the cube is affected
+				const falloff = 1.5 - distance / radius;
+				const lift = falloff * 2; // Max lift = 2
 
-				cubes.setMatrixAt(i, tempMatrix);
+				// Ripple effect
+				const waveSpeed = 4.0;
+				const pulse = Math.sin(elapsedTime * waveSpeed - distance * 1.5) * 0.25;
+
+				// Combine the lift, pulse
+				tempPosition.y += (lift + pulse - tempPosition.y) * 0.2;
 			} else {
 				// Gradually return to original position
 				tempPosition.y = Math.max(0, tempPosition.y - 0.05);
-				tempMatrix.setPosition(tempPosition);
-				cubes.setMatrixAt(i, tempMatrix);
 				cubes.setColorAt(i, white);
 			}
+			tempMatrix.setPosition(tempPosition);
+			cubes.setMatrixAt(i, tempMatrix);
 		}
 
 		cubes.instanceColor.needsUpdate = true;
