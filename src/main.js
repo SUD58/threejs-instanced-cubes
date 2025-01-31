@@ -108,7 +108,7 @@ function animate() {
 		const instancePosition = new Vector3();
 		instancePosition.setFromMatrixPosition(instanceMatrix);
 
-		const radius = 4; // Define the radius around the intersection
+		const radius = 5; // Define the radius around the intersection
 		const radiusSquared = radius * radius; // Avoid expensive sqrt calculations
 
 		// Iterate over all instances
@@ -124,14 +124,25 @@ function animate() {
 
 			if (distanceSquared <= radiusSquared) {
 				// Change color for instances within the radius
+
 				cubes.getColorAt(i, color);
 				if (color.equals(white)) {
-					cubes.setColorAt(i, color.setHex(Math.random() * 0xffffff));
+					cubes.setColorAt(i, color.setHex(0xefbf04));
 				}
+
+				const distance = Math.sqrt(distanceSquared); // Get actual distance
+				const falloff = 1.5 - distance / radius; // Normalize falloff (closer = stronger)
+				const lift = falloff * 2; // Height affected by falloff
+
+				tempPosition.y = lift;
+				tempMatrix.setPosition(tempPosition);
+
+				cubes.setMatrixAt(i, tempMatrix);
 			}
 		}
 
 		cubes.instanceColor.needsUpdate = true;
+		cubes.instanceMatrix.needsUpdate = true;
 	}
 
 	requestAnimationFrame(animate);
