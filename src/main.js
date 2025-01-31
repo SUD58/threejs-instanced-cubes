@@ -17,6 +17,7 @@ import {
 	Raycaster,
 } from "three";
 import "./style.css";
+import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
 const scene = new Scene();
 scene.fog = new Fog(0xcccccc, 15, 50);
@@ -134,10 +135,16 @@ function animate() {
 				const falloff = 1.5 - distance / radius; // Normalize falloff (closer = stronger)
 				const lift = falloff * 2; // Height affected by falloff
 
-				tempPosition.y = lift;
+				tempPosition.y += (lift - tempPosition.y) / 10;
 				tempMatrix.setPosition(tempPosition);
 
 				cubes.setMatrixAt(i, tempMatrix);
+			} else {
+				// Gradually return to original position
+				tempPosition.y = Math.max(0, tempPosition.y - 0.05);
+				tempMatrix.setPosition(tempPosition);
+				cubes.setMatrixAt(i, tempMatrix);
+				cubes.setColorAt(i, white);
 			}
 		}
 
