@@ -2,3 +2,18 @@
 	margin: 0;
 	touch-action: none;
 }
+
+p {
+	font: 1em sans-serif;
+	font-weight: bold;
+
+	position: absolute;
+	right: 1rem;
+	top: 1rem;
+}
+
+@media screen and (max-width: 600px) {
+	p {
+		font-size: 0.8em;
+	}
+}
