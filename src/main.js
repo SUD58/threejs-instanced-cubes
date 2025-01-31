@@ -18,7 +18,6 @@ import {
 	Clock,
 } from "three";
 import "./style.css";
-import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
 const scene = new Scene();
 scene.fog = new Fog(0xcccccc, 15, 50);
